@@ -1,0 +1,854 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ankush Patidar | Business & Finance Analyst</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
+    
+    <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+
+    <style>
+        :root {
+            /* --- Graphite & Mint Green Professional Color Palette --- */
+            --bg-color-1: #1a1a1a; /* Darkest Charcoal */
+            --bg-color-2: #2a2a2a; /* Lighter Charcoal */
+            --secondary-color: #4a4a4a; /* Medium Grey */
+            --accent-color: #00ff99;   /* Vibrant Mint Green */
+            --text-color: #e6e6e6;   /* Soft White */
+            --text-muted: #888888;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Lato', sans-serif;
+            background-color: var(--bg-color-1);
+            color: var(--text-color);
+            margin: 0;
+            padding: 0;
+            cursor: none; /* Hide the default cursor */
+        }
+        
+        /* --- High Polish Additions --- */
+        #preloader {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background-color: var(--bg-color-1);
+            z-index: 2000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: opacity 0.5s ease-out;
+        }
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid var(--secondary-color);
+            border-top-color: var(--accent-color);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+
+        #custom-cursor {
+            position: fixed;
+            width: 20px;
+            height: 20px;
+            border: 2px solid var(--accent-color);
+            border-radius: 50%;
+            pointer-events: none;
+            transform: translate(-50%, -50%);
+            transition: width 0.2s, height 0.2s;
+            z-index: 2001;
+        }
+
+        #scroll-to-top {
+            position: fixed;
+            bottom: 20px; right: 20px;
+            width: 50px; height: 50px;
+            background-color: var(--secondary-color);
+            color: var(--accent-color);
+            border: none;
+            border-radius: 50%;
+            font-size: 1.5rem;
+            cursor: pointer;
+            z-index: 998;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.3s, transform 0.3s;
+        }
+        #scroll-to-top.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        
+        #command-palette {
+            display: none;
+            position: fixed;
+            top: 20%;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 2002;
+            width: 90%;
+            max-width: 500px;
+            background-color: var(--bg-color-1);
+            border: 1px solid var(--secondary-color);
+            border-radius: 8px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+        #command-palette input {
+            width: 100%;
+            padding: 1rem;
+            background: transparent;
+            border: none;
+            border-bottom: 1px solid var(--secondary-color);
+            color: var(--text-color);
+            font-size: 1rem;
+        }
+        #command-palette ul {
+            list-style: none;
+            padding: 0.5rem;
+            margin: 0;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        #command-palette li {
+            padding: 0.75rem 1rem;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+        #command-palette li:hover, #command-palette li.selected {
+            background-color: var(--secondary-color);
+        }
+
+
+        #canvas-bg {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            z-index: -1;
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 0 2rem;
+        }
+
+        /* --- Navigation --- */
+        nav {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            background-color: rgba(26, 26, 26, 0.85);
+            backdrop-filter: blur(10px);
+            z-index: 1000;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transform: translateY(-100%);
+            transition: transform 0.3s ease-in-out;
+        }
+
+        nav.visible {
+            transform: translateY(0);
+        }
+
+        nav a {
+            color: var(--text-muted);
+            text-decoration: none;
+            margin: 0 1.5rem;
+            font-family: 'Poppins', sans-serif;
+            transition: color 0.3s;
+        }
+
+        nav a:hover, nav a.active {
+            color: var(--accent-color);
+        }
+        
+        /* --- Fixed Social Links --- */
+        .social-links {
+            position: fixed;
+            left: 20px;
+            bottom: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+            z-index: 999;
+        }
+        .social-links a {
+            color: var(--text-muted);
+            font-size: 1.5rem;
+            transition: color 0.3s, transform 0.3s;
+        }
+        .social-links a:hover {
+            color: var(--accent-color);
+            transform: translateY(-3px);
+        }
+
+        /* --- Section Styling & Animation --- */
+        .section {
+            position: relative;
+            z-index: 1;
+            padding: 6rem 0;
+            background-color: var(--bg-color-1);
+        }
+        
+        #experience, #projects { background-color: var(--bg-color-2); }
+        
+        .section-title {
+            font-family: 'Poppins', sans-serif;
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 3rem;
+            text-align: center;
+            color: var(--text-color);
+            position: relative;
+            opacity: 0;
+            transform: translateY(30px);
+            transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+        }
+        .section.visible .section-title {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .section-title::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80px;
+            height: 4px;
+            background-color: var(--accent-color);
+            border-radius: 2px;
+        }
+
+        /* --- Hero Section --- */
+        #hero {
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+        }
+
+        .hero-text h1 {
+            font-family: 'Poppins', sans-serif;
+            font-size: 4rem;
+            margin: 0;
+            color: #fff;
+        }
+        
+        .hero-text .typing-container {
+            font-size: 1.5rem;
+            color: var(--accent-color);
+            height: 2.2rem;
+            margin-top: 0.5rem;
+        }
+
+        .typing-cursor {
+            display: inline-block;
+            width: 2px;
+            height: 1.5rem;
+            background-color: var(--accent-color);
+            animation: blink 0.7s infinite;
+        }
+
+        @keyframes blink { 50% { opacity: 0; } }
+        
+        /* --- Glassmorphism Cards with Mouse-Reactive Glow --- */
+        .glass-card {
+            background-color: rgba(26, 26, 26, 0.5); /* Semi-transparent base */
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--secondary-color);
+            position: relative;
+            overflow: hidden;
+            transition: border-color 0.3s ease;
+        }
+        .glass-card::before {
+            content: '';
+            position: absolute;
+            width: 200px;
+            height: 200px;
+            background: radial-gradient(circle, rgba(0, 255, 153, 0.15) 0%, transparent 80%);
+            transform: translate(-50%, -50%);
+            top: var(--mouse-y, -100px);
+            left: var(--mouse-x, -100px);
+            transition: top 0.1s linear, left 0.1s linear;
+        }
+
+        /* --- Experience & Education Section --- */
+        .timeline {
+            position: relative;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .timeline::after {
+            content: '';
+            position: absolute;
+            width: 3px;
+            background-color: var(--secondary-color);
+            top: 0; bottom: 0;
+            left: 50%; margin-left: -1.5px;
+        }
+
+        .timeline-item {
+            padding: 10px 40px;
+            position: relative;
+            width: 50%;
+            opacity: 0; transform: translateY(30px);
+            transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+        }
+
+        .section.visible .timeline-item { opacity: 1; transform: translateY(0); }
+        .section.visible .timeline-item:nth-child(1) { transition-delay: 0.2s; }
+        .section.visible .timeline-item:nth-child(2) { transition-delay: 0.4s; }
+        .section.visible .timeline-item:nth-child(3) { transition-delay: 0.6s; }
+        .section.visible .timeline-item:nth-child(4) { transition-delay: 0.8s; }
+
+        .timeline-item.left { left: 0; }
+        .timeline-item.right { left: 50%; }
+
+        .timeline-item::after {
+            content: '';
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            right: -10px;
+            background-color: var(--bg-color-2);
+            border: 4px solid var(--accent-color);
+            top: 15px; border-radius: 50%; z-index: 1;
+        }
+        #education .timeline-item::after { background-color: var(--bg-color-1); }
+        .timeline-item.right::after { left: -10px; }
+        
+        .timeline-content {
+            padding: 20px 30px;
+            border-radius: 8px;
+        }
+        .timeline-content:hover { border-color: var(--accent-color); }
+        .timeline-content h3 { font-family: 'Poppins', sans-serif; margin-top: 0; color: var(--accent-color); font-size: 1.2rem; }
+        .timeline-content .date, .timeline-content .institution, .timeline-content .company { font-size: 0.9rem; color: var(--text-muted); margin-bottom: 0.5rem; }
+        .timeline-content ul { padding-left: 20px; margin-top: 1rem; color: var(--text-muted); line-height: 1.6; }
+        .timeline-content li { margin-bottom: 0.5rem; }
+
+        /* --- Skills Section --- */
+        #skills-canvas-container {
+            width: 100%;
+            height: 500px;
+            position: relative;
+            opacity: 0; transform: translateY(30px);
+            transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+        }
+        .section.visible #skills-canvas-container {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        #skills-canvas {
+            width: 100%;
+            height: 100%;
+            cursor: grab;
+        }
+        #skills-canvas:active {
+            cursor: grabbing;
+        }
+        
+        /* --- Projects Section --- */
+        .projects-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+        }
+
+        .project-card {
+            border-radius: 8px; overflow: hidden;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+            display: flex; flex-direction: column; cursor: pointer;
+            opacity: 0; transform: translateY(30px);
+            transition: transform 0.3s ease, opacity 0.6s ease-out, box-shadow 0.3s ease;
+        }
+        .section.visible .project-card { opacity: 1; transform: translateY(0); }
+        .section.visible .project-card:nth-child(1) { transition-delay: 0.1s; }
+        .section.visible .project-card:nth-child(2) { transition-delay: 0.2s; }
+        .section.visible .project-card:nth-child(3) { transition-delay: 0.3s; }
+        .section.visible .project-card:nth-child(4) { transition-delay: 0.4s; }
+        .section.visible .project-card:nth-child(5) { transition-delay: 0.5s; }
+        .section.visible .project-card:nth-child(6) { transition-delay: 0.6s; }
+
+
+        .project-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 10px 30px rgba(0, 255, 153, 0.1);
+        }
+
+        .project-content { padding: 1.5rem; flex-grow: 1; display: flex; flex-direction: column; }
+        .project-content i { font-size: 2.5rem; color: var(--accent-color); margin-bottom: 1rem; }
+        .project-content h3 { font-family: 'Poppins', sans-serif; margin: 0 0 0.5rem; }
+        .project-content p { flex-grow: 1; color: var(--text-muted); }
+        .project-tags { margin-top: 1rem; display: flex; flex-wrap: wrap; gap: 0.5rem; }
+        .project-tags span {
+            background-color: var(--secondary-color); color: var(--accent-color);
+            padding: 0.25rem 0.75rem; border-radius: 15px; font-size: 0.75rem; font-weight: 600;
+        }
+        
+        /* --- Project Modal --- */
+        .modal {
+            display: none; position: fixed; z-index: 1001; left: 0; top: 0;
+            width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.7);
+            justify-content: center; align-items: center;
+        }
+        .modal-content {
+            background-color: var(--primary-color); margin: auto; padding: 30px;
+            border: 1px solid var(--secondary-color); width: 80%; max-width: 600px;
+            border-radius: 8px; position: relative; animation: slideIn 0.5s ease-out;
+        }
+        @keyframes slideIn { from { transform: translateY(-50px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        .close-button {
+            color: #aaa; position: absolute; top: 15px; right: 25px;
+            font-size: 28px; font-weight: bold; cursor: pointer;
+        }
+        .close-button:hover, .close-button:focus { color: var(--accent-color); text-decoration: none; }
+        .modal h3 { color: var(--accent-color); font-size: 1.8rem; margin-top: 0;}
+        .modal h4 { color: var(--text-color); margin: 1.5rem 0 0.5rem 0; border-bottom: 1px solid var(--secondary-color); padding-bottom: 0.5rem;}
+        .modal p { color: var(--text-muted); line-height: 1.6; }
+        
+        /* --- Contact Section --- */
+        #contact { text-align: center; }
+        .contact-info { display: flex; justify-content: center; gap: 2rem; margin-top: 2rem; flex-wrap: wrap; }
+        .contact-info a { color: var(--text-muted); text-decoration: none; font-size: 1.1rem; transition: color 0.3s ease, transform 0.3s ease; display: inline-block; }
+        .contact-info a:hover { color: var(--accent-color); transform: translateY(-3px); }
+        .contact-info i { margin-right: 0.5rem; }
+
+        /* --- Responsive Design --- */
+        @media (max-width: 768px) {
+            body { cursor: auto; }
+            #custom-cursor { display: none; }
+            nav { justify-content: space-around; }
+            nav a { margin: 0 0.5rem; font-size: 0.9rem; }
+            .hero-text h1 { font-size: 2.5rem; }
+            .section { padding: 4rem 0; }
+            .section-title { font-size: 2rem; }
+            .social-links { display: none; }
+            
+            .timeline::after { left: 31px; }
+            .timeline-item { width: 100%; padding-left: 70px; padding-right: 25px; }
+            .timeline-item.right { left: 0%; }
+            .timeline-item::after { left: 21px; }
+        }
+    </style>
+</head>
+<body>
+    <div id="preloader">
+        <div class="spinner"></div>
+    </div>
+    <div id="custom-cursor"></div>
+    <canvas id="canvas-bg"></canvas>
+    <button id="scroll-to-top" title="Go to top"><i class="fas fa-arrow-up"></i></button>
+
+    <div id="command-palette">
+        <input type="text" id="command-input" placeholder="Navigate to...">
+        <ul id="command-list"></ul>
+    </div>
+
+    <div class="social-links">
+        <a href="https://www.linkedin.com/in/ankushpatidar-488339244" target="_blank" aria-label="LinkedIn"><i class="fab fa-linkedin"></i></a>
+        <a href="#" target="_blank" aria-label="GitHub"><i class="fab fa-github"></i></a>
+        <a href="mailto:ankushptdrr@gmail.com" aria-label="Email"><i class="fas fa-envelope"></i></a>
+    </div>
+
+    <div id="projectModal" class="modal">
+        <div class="modal-content">
+            <span class="close-button">&times;</span>
+            <h3 id="modalTitle"></h3>
+            <h4>The Business Problem</h4>
+            <p id="modalProblem"></p>
+            <h4>My Analytical Solution</h4>
+            <p id="modalSolution"></p>
+            <h4>Impactful Result</h4>
+            <p id="modalResult"></p>
+        </div>
+    </div>
+
+    <nav id="navbar">
+        <a href="#about">About</a>
+        <a href="#experience">Experience</a>
+        <a href="#education">Education</a>
+        <a href="#skills">Skills</a>
+        <a href="#projects">Projects</a>
+        <a href="#contact">Contact</a>
+    </nav>
+
+    <header id="hero">
+        <div class="hero-text">
+            <h1>Ankush Patidar</h1>
+            <div class="typing-container">
+                <span id="typing-text"></span><span class="typing-cursor"></span>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <section id="about" class="section">
+            <div class="container">
+                <h2 class="section-title">About Me</h2>
+                <p>I am a results-oriented MBA graduate with a passion for decoding complex data to drive business strategy and product innovation. I specialize in transforming raw data into actionable insights using SQL, Python, and Tableau, helping organizations optimize performance and achieve their financial goals. I thrive in collaborative environments, translating stakeholder needs into measurable technical solutions. Let's build something impactful together.</p>
+            </div>
+        </section>
+
+        <section id="experience" class="section">
+            <div class="container">
+                <h2 class="section-title">Experience</h2>
+                <div class="timeline"></div>
+            </div>
+        </section>
+
+        <section id="education" class="section">
+            <div class="container">
+                <h2 class="section-title">Education</h2>
+                <div class="timeline"></div>
+            </div>
+        </section>
+
+        <section id="skills" class="section">
+             <div class="container">
+                <h2 class="section-title">Skills</h2>
+                <div id="skills-canvas-container">
+                    <canvas id="skills-canvas"></canvas>
+                </div>
+            </div>
+        </section>
+
+        <section id="projects" class="section">
+            <div class="container">
+                <h2 class="section-title">Key Projects</h2>
+                <div class="projects-grid"></div>
+            </div>
+        </section>
+
+        <section id="contact" class="section">
+            <div class="container">
+                <h2 class="section-title">Get In Touch</h2>
+                <p>I'm currently seeking new opportunities in business and finance analytics. Let's connect and discuss how my skills can bring value to your team.</p>
+                <div class="contact-info">
+                    <a href="mailto:ankushptdrr@gmail.com"><i class="fas fa-envelope"></i> ankushptdrr@gmail.com</a>
+                    <a href="https://www.linkedin.com/in/ankushpatidar-488339244" target="_blank"><i class="fab fa-linkedin"></i> LinkedIn Profile</a>
+                    <a href="#"><i class="fas fa-phone"></i> 7999623703</a>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            
+            const projectData = {
+                proj1: { title: 'Instagram User Analytics', problem: 'The marketing team needed to understand which content resonates most with users and identify inactive "ghost followers" that were hurting engagement metrics.', solution: 'Using SQL, I queried a user database to analyze likes and comments against post types. I isolated users who had not engaged in over six months to create a list of potential ghost followers.', result: 'Delivered a report that identified the top 5 most engaging content themes, leading to a strategy that increased average post likes by 20%. Provided a list of over 500 inactive users for removal.' },
+                proj2: { title: 'Bank Loan Risk Analysis', problem: 'A financial institution was experiencing a higher-than-expected loan default rate and needed to identify the key factors driving this risk to adjust their lending criteria.', solution: 'I performed a deep-dive Exploratory Data Analysis (EDA) in Python using Pandas and Matplotlib on their loan portfolio. I analyzed variables like debt-to-income ratio, credit history, and employment length against loan status.', result: 'My analysis proved that customers with a DTI ratio over 0.4 were 3 times more likely to default. This data-driven insight led to a revised, more robust risk assessment model.' },
+                proj3: { title: 'Operational & Metric Analytics', problem: 'The sales department relied on manual, weekly reports that were time-consuming to create and often contained outdated information, causing delays in decision-making.', solution: 'I automated the entire reporting process by connecting multiple data sources to a Power BI dashboard. I used DAX to create complex KPIs, enabling senior management to make faster, data-driven decisions.', result: 'The live dashboard eliminated 8 hours of manual reporting work per week and gave leadership real-time visibility, improving forecast accuracy by 25%.' },
+                proj4: { title: 'Hiring Process Analytics', problem: 'An MNC was struggling with a long time-to-fill for critical roles and wanted to understand which recruitment sources yielded the best candidates.', solution: 'I analyzed two years of historical hiring data using SQL and visualized the recruitment funnel in Tableau. This allowed us to track candidate progression from application to offer for each source.', result: 'The dashboard revealed that employee referrals had the highest offer-acceptance rate (75%), prompting a strategic shift that improved time-to-fill by 15%.' },
+                proj5: { title: 'IMDB Movie Financials Analysis', problem: 'A film investment company wanted to understand the financial factors that contribute to a movie\'s success to better inform their investment decisions.', solution: 'Using SQL and Python, I analyzed the relationship between movie budget, genre, and worldwide gross revenue. I segmented the data to identify the most consistently profitable film types.', result: 'The analysis showed that while big budgets correlate with big revenue, the highest ROI was found in mid-budget ($20M-$50M) horror and thriller genres. This provided a new, data-backed investment thesis.' },
+                proj6: { title: 'Automotive Price-Feature Analysis', problem: 'An automotive manufacturer needed to optimize their vehicle pricing by understanding which features had the biggest impact on customer perceived value and final market price.', solution: 'I performed a statistical analysis and built a multiple linear regression model in Python to determine the price elasticity of features like horsepower and brand prestige.', result: 'The model, with 85% accuracy, demonstrated that brand prestige and horsepower were the top two drivers of price. This enabled the company to create more profitable feature packages.' }
+            };
+
+            function populateAllContent() {
+                const timeline = document.querySelector('#experience .timeline');
+                const experiences = [
+                    { side: 'left', title: 'Business Analyst Intern', date: 'June 2025 - Present', company: 'Koncepts Lab', points: ['Authored detailed Business Requirement Documents (BRDs) and functional specifications for a new CRM module, ensuring 100% alignment with stakeholder needs and a seamless handoff to the development team.', 'Translated business needs into technical specifications by developing comprehensive process flow diagrams.', 'Identified performance trends through data analysis, providing recommendations that led to a 10% improvement in process efficiency.'] },
+                    { side: 'right', title: 'Marketing Analyst Intern', date: 'Feb 2025 - May 2025', company: 'Koncepts Lab', points: ['Spearheaded an A/B testing program for digital ad campaigns, resulting in a 25% increase in click-through rates (CTR) and a 15% reduction in cost-per-acquisition (CPA).', 'Delivered actionable insights by tracking and analyzing KPIs across multiple digital marketing campaigns to measure effectiveness.', 'Performed customer segmentation analysis to identify high-value target audiences for personalized marketing strategies.'] },
+                    { side: 'left', title: 'Product Manager Intern', date: 'July 2024 – Sep 2024', company: 'Happy to Help Foundation', points: ['Designed the Minimum Viable Product (MVP) for a volunteer internship platform, facilitating seamless connections between students, professionals, and organizations.', 'Led ideation, feature planning, and roadmap development for a lead-selling platform, enhancing business growth opportunities.', 'Conducted in-depth market research and user feedback analysis to drive data-driven product improvements and user experience enhancements.'] },
+                    { side: 'right', title: 'Data Analyst Intern', date: 'Dec 2022 - Feb 2023', company: 'Trainity', points: ['Architected and deployed a suite of interactive Tableau dashboards that consolidated sales and customer data, reducing weekly reporting time by over 10 hours and providing leadership with real-time KPIs for strategic decision-making.', 'Performed exploratory data analysis (EDA) on 1,000+ bank loan applications, uncovering key trends and insights that contributed to optimized loan approval strategies.', 'Evaluated operational KPIs to identify performance trends and areas for improvement, enhancing business decision-making.'] }
+                ];
+                timeline.innerHTML = experiences.map(exp => `<div class="timeline-item ${exp.side}"><div class="timeline-content glass-card"><h3>${exp.title}</h3><p class="date">${exp.date}</p><p class="company">${exp.company}</p><ul>${exp.points.map(p => `<li>${p}</li>`).join('')}</ul></div></div>`).join('');
+                
+                const educationTimeline = document.querySelector('#education .timeline');
+                const educations = [ { side: 'left', degree: 'Master of Business Administration - MBA', institution: 'Prestige Institute of Management & Research', date: 'Sep 2024 - May 2026' }, { side: 'right', degree: 'Ca foundation', institution: 'The Institute of Chartered Accountants of India', date: '' }, { side: 'left', degree: 'Bachelor of Commerce - BCom', institution: 'Devi Ahilya Vishwavidyalaya (DAVV), Indore', date: '' } ];
+                educationTimeline.innerHTML = educations.map(edu => `<div class="timeline-item ${edu.side}"><div class="timeline-content glass-card"><h3>${edu.degree}</h3><p class="institution">${edu.institution}</p><p class="date">${edu.date}</p></div></div>`).join('');
+
+                const projectsGrid = document.querySelector('.projects-grid');
+                projectsGrid.innerHTML = `
+                    <div class="project-card glass-card" data-project="proj1"><div class="project-content"><i class="fab fa-instagram"></i><h3>Instagram User Analytics</h3><p>Analyzed user engagement data to understand behavior and drive content strategy.</p><div class="project-tags"><span>Excel</span><span>SQL</span></div></div></div>
+                    <div class="project-card glass-card" data-project="proj2"><div class="project-content"><i class="fas fa-hand-holding-usd"></i><h3>Bank Loan Risk Analysis</h3><p>Applied risk analytics in consumer finance to develop strategies for minimizing loan defaults.</p><div class="project-tags"><span>Python</span><span>Finance</span></div></div></div>
+                    <div class="project-card glass-card" data-project="proj3"><div class="project-content"><i class="fas fa-chart-pie"></i><h3>Operational & Metric Analytics</h3><p>Unlocked operational insights by creating a comprehensive Power BI performance dashboard.</p><div class="project-tags"><span>Excel</span><span>Data Analysis</span></div></div></div>
+                    <div class="project-card glass-card" data-project="proj4"><div class="project-content"><i class="fas fa-user-plus"></i><h3>Hiring Process Analytics</h3><p>Analyzed historical hiring data to optimize the recruitment funnel and improve quality of hire.</p><div class="project-tags"><span>Excel</span><span>SQL</span></div></div></div>
+                    <div class="project-card glass-card" data-project="proj5"><div class="project-content"><i class="fas fa-film"></i><h3>IMDB Movie Financials Analysis</h3><p>Explored movie data to derive insights into the factors that contribute to box office success.</p><div class="project-tags"><span>Excel</span><span>SQL</span></div></div></div>
+                    <div class="project-card glass-card" data-project="proj6"><div class="project-content"><i class="fas fa-car"></i><h3>Automotive Price-Feature Analysis</h3><p>Analyzed the impact of various car features on pricing and profitability for manufacturers.</p><div class="project-tags"><span>Statistics</span><span>Regression</span></div></div></div>
+                `;
+            }
+            
+            function attachEventListeners() {
+                const modal = document.getElementById('projectModal');
+                const closeButton = document.querySelector('.close-button');
+                function openModal(projectKey) {
+                    const data = projectData[projectKey];
+                    if (!data) return;
+                    document.getElementById('modalTitle').innerText = data.title;
+                    document.getElementById('modalProblem').innerText = data.problem;
+                    document.getElementById('modalSolution').innerText = data.solution;
+                    document.getElementById('modalResult').innerText = data.result;
+                    modal.style.display = "flex";
+                }
+                document.querySelectorAll('.project-card').forEach(card => { card.onclick = () => openModal(card.dataset.project); });
+                closeButton.onclick = () => { modal.style.display = "none"; };
+                window.onclick = (event) => { if (event.target == modal) { modal.style.display = "none"; } };
+
+                const observerOptions = { root: null, rootMargin: '0px', threshold: 0.1 };
+                const observer = new IntersectionObserver((entries) => {
+                    entries.forEach(entry => {
+                        if (entry.isIntersecting) { entry.target.classList.add('visible'); }
+                    });
+                }, observerOptions);
+
+                const sections = document.querySelectorAll('.section');
+                sections.forEach(section => observer.observe(section));
+
+                const navbar = document.getElementById('navbar');
+                const navLinks = document.querySelectorAll('nav a');
+                const navObserver = new IntersectionObserver((entries) => {
+                     entries.forEach(entry => {
+                        if (entry.isIntersecting) {
+                            navLinks.forEach(link => { link.classList.toggle('active', link.getAttribute('href') === `#${entry.target.id}`); });
+                        }
+                    });
+                }, { rootMargin: "-50% 0px -50% 0px"});
+                sections.forEach(section => navObserver.observe(section));
+
+                const heroObserver = new IntersectionObserver((entries) => {
+                    entries.forEach(entry => { navbar.classList.toggle('visible', !entry.isIntersecting); });
+                }, { threshold: 0.1 });
+                heroObserver.observe(document.getElementById('hero'));
+
+                document.querySelectorAll('.glass-card').forEach(card => {
+                    card.addEventListener('mousemove', e => {
+                        const rect = card.getBoundingClientRect();
+                        card.style.setProperty('--mouse-x', `${e.clientX - rect.left}px`);
+                        card.style.setProperty('--mouse-y', `${e.clientY - rect.top}px`);
+                    });
+                });
+            }
+
+            // --- HIGH POLISH FEATURES ---
+            const preloader = document.getElementById('preloader');
+            window.addEventListener('load', () => {
+                preloader.style.opacity = '0';
+                setTimeout(() => { preloader.style.display = 'none'; }, 500);
+            });
+
+            const cursor = document.getElementById('custom-cursor');
+            window.addEventListener('mousemove', e => {
+                cursor.style.top = e.clientY + 'px';
+                cursor.style.left = e.clientX + 'px';
+            });
+
+            const scrollToTopBtn = document.getElementById('scroll-to-top');
+            window.addEventListener('scroll', () => {
+                if (window.scrollY > 300) {
+                    scrollToTopBtn.classList.add('visible');
+                } else {
+                    scrollToTopBtn.classList.remove('visible');
+                }
+            });
+            scrollToTopBtn.addEventListener('click', () => {
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            });
+            
+            const commandPalette = document.getElementById('command-palette');
+            const commandInput = document.getElementById('command-input');
+            const commandList = document.getElementById('command-list');
+            const commands = [ { name: 'Go to About', href: '#about'}, { name: 'Go to Experience', href: '#experience'}, { name: 'Go to Education', href: '#education'}, { name: 'Go to Skills', href: '#skills'}, { name: 'Go to Projects', href: '#projects'}, { name: 'Go to Contact', href: '#contact'}, ];
+            function renderCommands(filter = '') {
+                commandList.innerHTML = '';
+                const filteredCommands = commands.filter(cmd => cmd.name.toLowerCase().includes(filter.toLowerCase()));
+                filteredCommands.forEach(cmd => {
+                    const li = document.createElement('li');
+                    li.textContent = cmd.name;
+                    li.onclick = () => { document.querySelector(cmd.href).scrollIntoView({ behavior: 'smooth' }); commandPalette.style.display = 'none'; };
+                    commandList.appendChild(li);
+                });
+            }
+            document.addEventListener('keydown', e => {
+                if ((e.ctrlKey || e.metaKey) && e.key === 'k') { e.preventDefault(); commandPalette.style.display = 'block'; commandInput.value = ''; commandInput.focus(); renderCommands(); }
+                if (e.key === 'Escape') { commandPalette.style.display = 'none'; }
+            });
+            commandInput.addEventListener('input', () => renderCommands(commandInput.value));
+
+            // --- INITIALIZATION ---
+            populateAllContent();
+            attachEventListeners();
+
+            const typingText = document.getElementById('typing-text');
+            const roles = ["Business Analyst", "Financial Analyst", "Data-Driven Insights", "Financial Modeling"];
+            let roleIndex = 0, charIndex = 0, isDeleting = false;
+            function type() { const currentRole = roles[roleIndex]; if (isDeleting) { typingText.textContent = currentRole.substring(0, charIndex--); } else { typingText.textContent = currentRole.substring(0, charIndex++); } if (!isDeleting && charIndex === currentRole.length) { setTimeout(() => isDeleting = true, 2000); } else if (isDeleting && charIndex === 0) { isDeleting = false; roleIndex = (roleIndex + 1) % roles.length; } setTimeout(type, isDeleting ? 100 : 150); }
+            type();
+
+            // --- MAIN 3D BACKGROUND ---
+            let mouseX = 0, mouseY = 0;
+            const scene = new THREE.Scene();
+            scene.rotation.set(0.2, 0.3, 0); 
+            const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            camera.position.z = 10;
+            const renderer = new THREE.WebGLRenderer({ canvas: document.getElementById('canvas-bg'), alpha: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setPixelRatio(window.devicePixelRatio);
+            const clock = new THREE.Clock();
+
+            const grid = new THREE.GridHelper(100, 50, '#4a4a4a', '#2a2a2a');
+            grid.position.y = -5;
+            scene.add(grid);
+            const charts = [];
+            const mainLine = createRunningChart({ color: 0x00ff99, points: 500, width: 0.15, speed: 0.03, amplitude: 2, frequency: 0.1, y: 0, z: 0 });
+            charts.push(mainLine);
+            scene.add(mainLine.line);
+            const trendLine = createRunningChart({ color: 0xffffff, points: 500, width: 0.15, speed: 0.03, amplitude: 1.5, frequency: 0.05, y: 1, z: -1 });
+            charts.push(trendLine);
+            scene.add(trendLine.line);
+            const barChart = createBarChart({ color: 0x4a4a4a, count: 15, y: -4, z: -8 });
+            scene.add(barChart.group);
+            function createRunningChart(config) {
+                const geometry = new THREE.BufferGeometry();
+                const positions = new Float32Array(config.points * 3);
+                for (let i = 0; i < config.points; i++) { positions[i * 3] = (i - config.points / 2) * config.width; }
+                geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+                const material = new THREE.LineBasicMaterial({ color: config.color });
+                const line = new THREE.Line(geometry, material);
+                line.position.set(0, config.y, config.z);
+                return { line, ...config, boundary: (config.points * config.width) / 2 };
+            }
+            function createBarChart(config) {
+                const group = new THREE.Group();
+                group.position.set(0, config.y, config.z);
+                const bars = [];
+                const material = new THREE.MeshBasicMaterial({ color: config.color, transparent: true, opacity: 0.5 });
+                const geometry = new THREE.BoxGeometry(0.5, 1, 0.5);
+                 for (let i = 0; i < config.count; i++) { 
+                    const bar = new THREE.Mesh(geometry, material); 
+                    bar.position.set((i - config.count / 2) * 2, 0.5, 0); 
+                    group.add(bar); 
+                    bars.push(bar); 
+                }
+                return { group, bars };
+            }
+            document.addEventListener('mousemove', (event) => {
+                mouseX = (event.clientX / window.innerWidth) - 0.5;
+                mouseY = (event.clientY / window.innerHeight) - 0.5;
+            });
+            window.addEventListener('resize', () => {
+                const width = window.innerWidth;
+                const height = window.innerHeight;
+                renderer.setSize(width, height);
+                camera.aspect = width / height;
+                camera.updateProjectionMatrix();
+            });
+            const animate = () => {
+                requestAnimationFrame(animate);
+                const elapsedTime = clock.getElapsedTime();
+                charts.forEach(chartInfo => {
+                    const positions = chartInfo.line.geometry.attributes.position.array;
+                    for (let i = 0; i < chartInfo.points; i++) {
+                        positions[i * 3] -= chartInfo.speed;
+                        if (positions[i * 3] < -chartInfo.boundary) { positions[i * 3] += chartInfo.boundary * 2; }
+                        positions[i * 3 + 1] = (Math.sin(i * chartInfo.freq + elapsedTime * 2) * chartInfo.amplitude) + chartInfo.y;
+                    }
+                    chartInfo.line.geometry.attributes.position.needsUpdate = true;
+                });
+                barChart.bars.forEach((bar, i) => { 
+                    const targetHeight = (Math.sin(elapsedTime + i) + 1.1) * 2 + 0.1; 
+                    bar.scale.y = THREE.MathUtils.lerp(bar.scale.y, targetHeight, 0.1); 
+                    bar.position.y = (bar.scale.y / 2) - 2; 
+                });
+                camera.position.x += (mouseX * 5 - camera.position.x) * .05;
+                camera.position.y += (-mouseY * 5 - camera.position.y) * .05;
+                camera.lookAt(scene.position);
+                renderer.render(scene, camera);
+            };
+            animate();
+            
+            // --- 3D INTERACTIVE SKILLS GLOBE ---
+            const skillsCanvas = document.getElementById('skills-canvas');
+            if(skillsCanvas) {
+                const scene2 = new THREE.Scene();
+                const camera2 = new THREE.PerspectiveCamera(75, skillsCanvas.clientWidth / skillsCanvas.clientHeight, 0.1, 1000);
+                camera2.position.z = 8;
+                const renderer2 = new THREE.WebGLRenderer({ canvas: skillsCanvas, alpha: true });
+                renderer2.setSize(skillsCanvas.clientWidth, skillsCanvas.clientHeight);
+                renderer2.setPixelRatio(window.devicePixelRatio);
+                
+                const controls = new THREE.OrbitControls(camera2, renderer2.domElement);
+                controls.enableZoom = false;
+                controls.enablePan = false;
+                controls.autoRotate = true;
+                controls.autoRotateSpeed = 1.0;
+
+                const globe = new THREE.Mesh(
+                    new THREE.SphereGeometry(3, 32, 32),
+                    new THREE.MeshBasicMaterial({ color: 0x00ff99, wireframe: true, transparent: true, opacity: 0.2 })
+                );
+                scene2.add(globe);
+
+                const skillsData = [ { name: 'Financial Modeling' }, { name: 'SQL' }, { name: 'Python' }, { name: 'MS Excel' }, { name: 'Tableau' }, { name: 'A/B Testing' }, { name: 'Agile Methodologies' } ];
+                const skillSprites = [];
+                
+                function createSkillSprite(text) {
+                    const canvas = document.createElement('canvas');
+                    const context = canvas.getContext('2d');
+                    context.font = 'bold 48px Poppins';
+                    const width = context.measureText(text).width;
+                    canvas.width = width + 20;
+                    canvas.height = 64;
+                    context.font = 'bold 48px Poppins';
+                    context.fillStyle = 'rgba(0, 255, 153, 0.8)';
+                    context.textAlign = 'center';
+                    context.textBaseline = 'middle';
+                    context.fillText(text, canvas.width / 2, canvas.height / 2);
+                    const texture = new THREE.CanvasTexture(canvas);
+                    const spriteMaterial = new THREE.SpriteMaterial({ map: texture, transparent: true });
+                    const sprite = new THREE.Sprite(spriteMaterial);
+                    sprite.scale.set(canvas.width/100, canvas.height/100, 1);
+                    return sprite;
+                }
+
+                skillsData.forEach((skill, i) => {
+                    const phi = Math.acos(-1 + (2 * i) / skillsData.length);
+                    const theta = Math.sqrt(skillsData.length * Math.PI) * phi;
+                    const sprite = createSkillSprite(skill.name);
+                    sprite.position.setFromSphericalCoords(4, phi, theta);
+                    skillSprites.push(sprite);
+                    scene2.add(sprite);
+                });
+                
+                const resizeObserver = new ResizeObserver(entries => {
+                    const entry = entries[0];
+                    const { width, height } = entry.contentRect;
+                    camera2.aspect = width / height;
+                    camera2.updateProjectionMatrix();
+                    renderer2.setSize(width, height);
+                });
+                resizeObserver.observe(skillsCanvas.parentElement);
+
+                const animateSkills = () => {
+                    requestAnimationFrame(animateSkills);
+                    controls.update();
+                    skillSprites.forEach(sprite => sprite.lookAt(camera2.position));
+                    renderer2.render(scene2, camera2);
+                };
+                animateSkills();
+            }
+        });
+    </script>
+</body>
+</html>
